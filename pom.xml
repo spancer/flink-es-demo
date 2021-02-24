@@ -49,7 +49,7 @@
 		<hive.version>2.3.2</hive.version>
 		<hbase.version>2.0.1</hbase.version>
 		<ch.driver.version>0.2.4</ch.driver.version>
-		<elasticsearch.version>7.0.1</elasticsearch.version>
+		<elasticsearch.version>7.9.1</elasticsearch.version>
 		<flink.ck.sink>1.1.0</flink.ck.sink>
 		<scala.binary.version>2.11</scala.binary.version>
 		<snakeyaml.version>1.26</snakeyaml.version>

@@ -44,14 +44,13 @@ public class Bootstrap {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(1);
     DataStream<String> data = env.addSource(new UserEventSource(520));
-    String host = "127.0.0.1";
-    //String host = "10.116.200.5";
+    String host = "elasticsearch";
     int port = 9200;
     List<HttpHost> httpHosts = new ArrayList<>();
     httpHosts.add(new HttpHost(host, port, "http"));
     RestHighLevelClient client =
         new RestHighLevelClient(RestClient.builder(new HttpHost(host, port, "http")));
-    String index = "car";
+    String index = "bitmaptest";
     boolean recreate = true;
     // delete index
     if (recreate && client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT)) {

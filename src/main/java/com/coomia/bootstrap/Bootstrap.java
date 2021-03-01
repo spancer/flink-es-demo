@@ -43,7 +43,7 @@ public class Bootstrap {
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(1);
-    DataStream<String> data = env.addSource(new UserEventSource(2400000000L)); //24亿
+    DataStream<String> data = env.addSource(new UserEventSource(5000000L)); //500万
     String host = "elasticsearch";
     host ="10.116.200.21";
     int port = 9200;
@@ -51,7 +51,7 @@ public class Bootstrap {
     httpHosts.add(new HttpHost(host, port, "http"));
     RestHighLevelClient client =
         new RestHighLevelClient(RestClient.builder(new HttpHost(host, port, "http")));
-    String index = "car";
+    String index = "cartimeasc";
     boolean recreate = true;
     // delete index
     if (recreate && client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT)) {
@@ -92,7 +92,7 @@ public class Bootstrap {
       CreateIndexRequest createIndex = new CreateIndexRequest(index);
       createIndex.mapping(index, builder);
       createIndex.settings(
-          Settings.builder().put("index.number_of_shards", 5).put("index.number_of_replicas", 1));
+          Settings.builder().put("index.number_of_shards", 10).put("index.number_of_replicas", 1));
       client.indices().create(createIndex, RequestOptions.DEFAULT);
     }
     ElasticsearchSink.Builder<String> esSinkBuilder =

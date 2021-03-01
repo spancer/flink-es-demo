@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author spancer
@@ -17,6 +18,7 @@ import java.util.UUID;
  */
 public class UEDataRandomUtil {
 
+  static LongAdder orderLong = new LongAdder();
   /**
    * 随机一个IP
    * 
@@ -91,7 +93,43 @@ public class UEDataRandomUtil {
     }
     return new Date().getTime();
   }
+  
+  /**
+   * 
+   * @param beginDate
+   * @param endDate
+   * @return
+   */
+  public static long randomDateInOrder(String beginDate, String endDate) {
+    
+    Date end = null;
+    Date start = null;
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    try {
+      start = format.parse(beginDate);
+      if (null == endDate)
+        end = new Date();
+      else
+        end = format.parse(endDate);
+      if (start.getTime() >= end.getTime()) {
+        return end.getTime();
+      }
+      long date = randomAscTime(start.getTime(), end.getTime());
+      return date;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return new Date().getTime();
+  }
 
+  private static long randomAscTime(long begin, long end) {
+    orderLong.add(new Random().nextInt(1000000));
+    long rtn = begin + orderLong.longValue();
+    if (rtn == begin || rtn == end) {
+      return random(begin, end);
+    }
+    return rtn;
+  }
   private static long random(long begin, long end) {
     long rtn = begin + (long) (Math.random() * (end - begin));
     if (rtn == begin || rtn == end) {
@@ -225,7 +263,7 @@ public class UEDataRandomUtil {
     result.put("deviceName", "摄像头设备" + deviceId);
     result.put("PlateNo", deviceId % 50 == 0 ? generateCarID(500000)
         : randomValue("湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
-    result.put("shotTime", randomDate("2021-01-01", null));
+    result.put("shotTime", randomDateInOrder("2021-01-01", null));
     double lon = Math.random() * Math.PI * 2;
     double lat = Math.acos(Math.random() * 2 - 1);
     result.put("bayonetLongitude", lon);

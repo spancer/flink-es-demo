@@ -79,9 +79,9 @@ public class DeckCarDetectQueryMaster {
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）
-    havingScriptParam.put("maxspeed", 120); // 
+    havingScriptParam.put("speed", 120d); // 
     Script script = new Script(ScriptType.INLINE, "expression",
-        "plateColorDescDistinct >havingCount || vehicleClassDescDistinct >havingCount || vehicleBrandDistinct > havingCount || maxspeed>maxspeed",
+        "plateColorDescDistinct >havingCount || vehicleClassDescDistinct >havingCount || vehicleBrandDistinct > havingCount || maxspeed>speed",
         havingScriptParam);
     BucketSelectorPipelineAggregationBuilder having =
         PipelineAggregatorBuilders.bucketSelector("HavingPlateNoGT1", bucketsPathsMap, script);

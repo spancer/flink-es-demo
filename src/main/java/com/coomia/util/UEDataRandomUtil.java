@@ -202,7 +202,7 @@ public class UEDataRandomUtil {
     result.put("deviceName", "摄像头设备" + deviceId);
     result.put("PlateNo", deviceId % 100 == 0 ? generateCarID()
         : randomValue("湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
-    result.put("shotTime", randomDate("2020-01-01", null));
+    result.put("shotTime", randomDate("2021-01-01", null));
     double lon = Math.random() * Math.PI * 2;
     double lat = Math.acos(Math.random() * 2 - 1);
     result.put("bayonetLongitude", lon);

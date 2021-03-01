@@ -44,44 +44,45 @@ public class BootstrapDataProducer {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(1);
     DataStream<String> data = env.addSource(new UserEventSource(3000000));
+    String host = "elasticsearch";
+    int port = 9200;
     List<HttpHost> httpHosts = new ArrayList<>();
-    httpHosts.add(new HttpHost("10.116.200.5", 9400, "http"));
+    httpHosts.add(new HttpHost(host, port, "http"));
     RestHighLevelClient client =
-        new RestHighLevelClient(RestClient.builder(new HttpHost("10.116.200.5", 9400, "http")));
+        new RestHighLevelClient(RestClient.builder(new HttpHost(host, port, "http")));
     String index = "car";
-    boolean recreate = false;
-    //delete index
-     if(recreate && client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT))
-     {
-       DeleteIndexRequest deleteIndex = new DeleteIndexRequest(index);
-       client.indices().delete(deleteIndex, RequestOptions.DEFAULT);
-       
-    // mapping config and put
-       XContentBuilder builder = XContentFactory.jsonBuilder();
-       builder.startObject();
-       {
-         builder.startObject("properties");
-         {
-           builder.startObject("PlateNo");
-           {
-             builder.field("type", "keyword");
-           }
-           builder.endObject();
-         }
-         builder.endObject();
-       }
-       builder.endObject();
-       // create index car
-       CreateIndexRequest createIndex = new CreateIndexRequest(index);
-       createIndex.mapping(index, builder);
-       createIndex.settings(
-           Settings.builder().put("index.number_of_shards", 5).put("index.number_of_replicas", 0));
-       client.indices().create(createIndex, RequestOptions.DEFAULT);
-     }
+    boolean recreate = true;
+    // delete index
+    if (recreate && client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT)) {
+      DeleteIndexRequest deleteIndex = new DeleteIndexRequest(index);
+      client.indices().delete(deleteIndex, RequestOptions.DEFAULT);
+
+      // mapping config and put
+      XContentBuilder builder = XContentFactory.jsonBuilder();
+      builder.startObject();
+      {
+        builder.startObject("properties");
+        {
+          builder.startObject("PlateNo");
+          {
+            builder.field("type", "keyword");
+          }
+          builder.endObject();
+        }
+        builder.endObject();
+      }
+      builder.endObject();
+      // create index car
+      CreateIndexRequest createIndex = new CreateIndexRequest(index);
+      createIndex.mapping(index, builder);
+      createIndex.settings(
+          Settings.builder().put("index.number_of_shards", 5).put("index.number_of_replicas", 0));
+      client.indices().create(createIndex, RequestOptions.DEFAULT);
+    }
     ElasticsearchSink.Builder<String> esSinkBuilder =
         new ElasticsearchSink.Builder<>(httpHosts, new ElasticsearchSinkFunctionWithConf(index));
     data.addSink(esSinkBuilder.build());
-
+    client.close();
     env.execute("sink event to es");
   }
 

@@ -29,12 +29,12 @@ import com.coomia.util.UEDataRandomUtil;
 public class UserEventSource extends RichParallelSourceFunction<String> {
 
   private static final long serialVersionUID = -3345711794203267205L;
-  private int dpv = 1 - 000 - 000;
+  private long dpv = 1 - 000 - 000;
 
   /**
    * 
    */
-  public UserEventSource(int dpv) {
+  public UserEventSource(long dpv) {
     this.dpv = dpv;
   }
 

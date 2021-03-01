@@ -185,6 +185,29 @@ public class UEDataRandomUtil {
     }
     return carID;
   }
+  
+  private static String generateCarID(int uv) {
+
+    char[] provinceAbbr = { // 省份简称 4+22+5+3
+        '京', '津', '沪', '渝', '冀', '豫', '云', '辽', '黑', '湘', '皖', '鲁', '苏', '浙', '赣', '鄂', '甘', '晋',
+        '陕', '吉', '闽', '贵', '粤', '青', '川', '琼', '宁', '新', '藏', '桂', '蒙', '港', '澳', '台'};
+    String alphas = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"; // 26个字母 + 10个数字
+
+    Random random = new Random(uv); // 随机数生成器
+
+    String carID = "";
+
+    // 省份+地区代码+· 如 湘A· 这个点其实是个传感器，不过加上美观一些
+    carID += provinceAbbr[random.nextInt(34)]; // 注意：分开加，因为加的是2个char
+    carID += alphas.charAt(random.nextInt(26));
+    // carID += alphas.charAt(random.nextInt(26)) + "·";
+
+    // 5位数字/字母
+    for (int i = 0; i < 5; i++) {
+      carID += alphas.charAt(random.nextInt(10));
+    }
+    return carID;
+  }
 
   /**
    * 随机一条记录
@@ -194,13 +217,13 @@ public class UEDataRandomUtil {
   public static Map<String, Object> randomRecord() {
     Map<String, Object> result = new HashMap<String, Object>();
     result.put("rowKey", UUID.randomUUID().toString().replaceAll("-", ""));
-    Integer deviceId = new Random().nextInt(2000000);
+    Integer deviceId = new Random().nextInt(1500);
     result.put("DeviceID", deviceId);
     result.put("plateColorDesc", randomValue("红", "黑 ", "白", "绿", "黄", "灰", "棕"));
     result.put("vehicleClassDesc", randomValue("重型全挂车", "小型车", "微型车", "紧凑车型", "中等车型", "高级车型",
         "三厢车型", "MPV车型", "SUV等车型", "CDV车型"));
     result.put("deviceName", "摄像头设备" + deviceId);
-    result.put("PlateNo", deviceId % 100 == 0 ? generateCarID()
+    result.put("PlateNo", deviceId % 50 == 0 ? generateCarID(500000)
         : randomValue("湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
     result.put("shotTime", randomDate("2021-01-01", null));
     double lon = Math.random() * Math.PI * 2;

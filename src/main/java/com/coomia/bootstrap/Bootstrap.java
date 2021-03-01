@@ -43,7 +43,7 @@ public class Bootstrap {
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(1);
-    DataStream<String> data = env.addSource(new UserEventSource(500000));
+    DataStream<String> data = env.addSource(new UserEventSource(2400000000L)); //24亿
     String host = "elasticsearch";
     host ="10.116.200.21";
     int port = 9200;

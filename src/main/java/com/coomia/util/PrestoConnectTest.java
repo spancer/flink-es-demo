@@ -36,7 +36,7 @@ public class PrestoConnectTest {
   }
 
   public static void main(String[] args) throws Exception {
-    String sql = "select * from elasticsearch.";
+    String sql = "select * from t2";
     conn = createConnection();
     statement = conn.createStatement();
     ResultSet rs = statement.executeQuery(sql);

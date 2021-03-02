@@ -1,0 +1,32 @@
+Index: flink-es-demo.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- flink-es-demo.iml	(revision 1a6dea5c3a296cc0080698680d98cdd0172197f2)
++++ flink-es-demo.iml	(date 1614679289804)
+@@ -20,7 +20,7 @@
+       <excludeFolder url="file://$MODULE_DIR$/target" />
+     </content>
+     <orderEntry type="sourceFolder" forTests="false" />
+-    <orderEntry type="inheritedJdk" />
++    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+     <orderEntry type="library" name="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER" level="application" />
+     <orderEntry type="library" name="Maven: com.facebook.presto:presto-jdbc:0.247" level="project" />
+     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.26" level="project" />
+Index: src/main/java/com/coomia/util/PrestoConnectTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/coomia/util/PrestoConnectTest.java	(revision 1a6dea5c3a296cc0080698680d98cdd0172197f2)
++++ src/main/java/com/coomia/util/PrestoConnectTest.java	(date 1614679330065)
+@@ -36,7 +36,7 @@
+   }
+ 
+   public static void main(String[] args) throws Exception {
+-    String sql = "select * from elasticsearch.";
++    String sql = "select * from t2";
+     conn = createConnection();
+     statement = conn.createStatement();
+     ResultSet rs = statement.executeQuery(sql);

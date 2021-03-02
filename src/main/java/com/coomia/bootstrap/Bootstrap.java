@@ -45,7 +45,6 @@ public class Bootstrap {
     env.setParallelism(1);
     DataStream<String> data = env.addSource(new UserEventSource(5000000L)); //500万
     String host = "elasticsearch";
-    host ="10.116.200.21";
     int port = 9200;
     List<HttpHost> httpHosts = new ArrayList<>();
     httpHosts.add(new HttpHost(host, port, "http"));

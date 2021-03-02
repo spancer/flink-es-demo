@@ -29,18 +29,20 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.CardinalityAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.MaxAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.pipeline.BucketSelectorPipelineAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 /**
- * ClassName:DeckCarDetectQuery Function: 通过套牌车辆分析，可及时掌握套牌情况，加强对公共安全的管控。
+ * ClassName:DeckCarDetectQueryFinal Function: 通过套牌车辆分析，可及时掌握套牌情况，加强对公共安全的管控。
  * 不同车身、不同车型、不同品牌、不同区域(deviceID)同时出现(within time interval) Date: 2020年9月15日 上午9:02:49
- * 
- * @author Administrator
+ * 该实现应该是最优方案，将速度的计算算在ES索引的过程中进行，为每条记录打上一个速度。
+ *
+ * @author spancer.ray
  * @version
- * @since JDK 1.6
+ * @since JDK 1.8
  * @see
  */
 public class DeckCarDetectQueryFinal {
@@ -66,8 +68,8 @@ public class DeckCarDetectQueryFinal {
     List fields = new ArrayList<String>();
     fields.add("shotTime");
     fields.add("location");
-    MaxspeedAggregationBuilder maxSpeedAgg =
-        new MaxspeedAggregationBuilder("maxspeed").fields(fields);
+
+    MaxAggregationBuilder maxspeedAgg  = AggregationBuilders.max("maxspeed").field("speed");
 
     /**
      * build script and params.
@@ -79,7 +81,7 @@ public class DeckCarDetectQueryFinal {
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）
-    havingScriptParam.put("speed", 120d); // 
+    havingScriptParam.put("speed", 120); //
     Script script = new Script(ScriptType.INLINE, "expression",
         "plateColorDescDistinct >havingCount || vehicleClassDescDistinct >havingCount || vehicleBrandDistinct > havingCount || maxspeed>speed",
         havingScriptParam);
@@ -87,13 +89,13 @@ public class DeckCarDetectQueryFinal {
         PipelineAggregatorBuilders.bucketSelector("HavingPlateNoGT1", bucketsPathsMap, script);
     ssb.aggregation(AggregationBuilders.terms("GroupbyPlateNo").field("PlateNo")
         .subAggregation(color).subAggregation(clas).subAggregation(brand)
-        .subAggregation(maxSpeedAgg).subAggregation(having));
+        .subAggregation(maxspeedAgg).subAggregation(having));
     ssb.query(query);
     ssb.size(0);
     System.out.println(ssb.toString());
     SearchRequest searchRequest = new SearchRequest();
     searchRequest.source(ssb);
-    searchRequest.indices("car");
+    searchRequest.indices("cartimeasc");
     SearchResponse sr = client.search(searchRequest, RequestOptions.DEFAULT);
     long took = sr.getTook().getMillis();
     System.out.println("耗时：" + took);

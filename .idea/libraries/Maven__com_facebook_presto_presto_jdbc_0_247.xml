@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.facebook.presto:presto-jdbc:0.247">
+    <CLASSES>
+      <root url="jar://G:/resources/m2/repository/com/facebook/presto/presto-jdbc/0.247/presto-jdbc-0.247.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://G:/resources/m2/repository/com/facebook/presto/presto-jdbc/0.247/presto-jdbc-0.247-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://G:/resources/m2/repository/com/facebook/presto/presto-jdbc/0.247/presto-jdbc-0.247-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

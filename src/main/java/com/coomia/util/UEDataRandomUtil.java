@@ -269,6 +269,7 @@ public class UEDataRandomUtil {
     result.put("bayonetLongitude", lon);
     result.put("bayonetLatitude", lat);
     result.put("location", lat + "," + lon);
+    result.put("speed",Math.abs(new Random().nextDouble()));
     return result;
   }
 

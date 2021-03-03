@@ -1,17 +1,13 @@
-
 /**
  * Project Name:flink-es-sink-demo File Name:ESQueryDemo.java Package Name:com.coomia.query
  * Date:2020年9月9日下午5:25:37 Copyright (c) 2020, spancer.ray All Rights Reserved.
- *
  */
-
 package com.coomia.query;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -32,10 +28,10 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 /**
  * 车辆徘徊查询
- * 
- * where shotTime between $t1 and $t2 and DeviceID in($d1,$d2, $d3...) group by DeviceID, PlateNo
+ *
+ * <p>where shotTime between $t1 and $t2 and DeviceID in($d1,$d2, $d3...) group by DeviceID, PlateNo
  * having count(plateNo)>=3
- * 
+ *
  * @author Administrator
  * @version
  * @since JDK 1.6
@@ -52,23 +48,29 @@ public class RoamCarDetectQuery {
         new RestHighLevelClient(RestClient.builder(new HttpHost("10.116.200.5", 9400, "http")));
     SearchSourceBuilder ssb = new SearchSourceBuilder();
     QueryBuilder query =
-        QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("shotTime").gte(start).lte(end))
+        QueryBuilders.boolQuery()
+            .must(QueryBuilders.rangeQuery("shotTime").gte(start).lte(end))
             .must(QueryBuilders.termsQuery("DeviceID", areaA));
     ssb.query(query);
     TermsAggregationBuilder parentAgg =
         AggregationBuilders.terms("GroupbyDevice").field("DeviceID");
     Map<String, String> bucketsPathsMap = new HashMap<String, String>();
     bucketsPathsMap.put("plateNo_count", "_count");
-    
+
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 3);
     Script script =
-        new Script(ScriptType.INLINE, "expression", "plateNo_count >= havingCount", havingScriptParam);
-    
+        new Script(
+            ScriptType.INLINE, "expression", "plateNo_count >= havingCount", havingScriptParam);
+
     TermsAggregationBuilder childAgg =
-        AggregationBuilders.terms("GroupbyPlateNo").field("PlateNo").subAggregations(
-            AggregatorFactories.builder().addPipelineAggregator(PipelineAggregatorBuilders
-                .bucketSelector("HavingPlateNoGT1", bucketsPathsMap, script)));
+        AggregationBuilders.terms("GroupbyPlateNo")
+            .field("PlateNo")
+            .subAggregations(
+                AggregatorFactories.builder()
+                    .addPipelineAggregator(
+                        PipelineAggregatorBuilders.bucketSelector(
+                            "HavingPlateNoGT1", bucketsPathsMap, script)));
     parentAgg.subAggregation(childAgg);
     ssb.size(0);
     ssb.aggregation(parentAgg);
@@ -87,16 +89,19 @@ public class RoamCarDetectQuery {
     for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bks : data) {
       org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms aggs =
           bks.getAggregations().get("GroupbyPlateNo");
-      for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : aggs
-          .getBuckets()) {
-        System.out.println("Device: " + bks.getKey() + " Count: " + bks.getDocCount() + " PlateNo: "
-            + bucket.getKeyAsString() + "  Count : " + bucket.getDocCount());
+      for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket :
+          aggs.getBuckets()) {
+        System.out.println(
+            "Device: "
+                + bks.getKey()
+                + " Count: "
+                + bks.getDocCount()
+                + " PlateNo: "
+                + bucket.getKeyAsString()
+                + "  Count : "
+                + bucket.getDocCount());
       }
-
     }
     client.close();
-
   }
-
 }
-

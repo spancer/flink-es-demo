@@ -1,4 +1,3 @@
-
 package com.coomia.util;
 
 import java.text.SimpleDateFormat;
@@ -19,9 +18,12 @@ import java.util.concurrent.atomic.LongAdder;
 public class UEDataRandomUtil {
 
   static LongAdder orderLong = new LongAdder();
+  private static String[] telFirst =
+      "134,135,136,137,138,139,150,151,152,157,158,159,130,131,132,155,156,133,153".split(",");
+
   /**
    * 随机一个IP
-   * 
+   *
    * @return
    */
   public static String randomIP() {
@@ -31,7 +33,7 @@ public class UEDataRandomUtil {
 
   /**
    * 随机一个平台
-   * 
+   *
    * @return
    */
   public static String randomPlatform() {
@@ -47,13 +49,25 @@ public class UEDataRandomUtil {
 
   /**
    * 随机一个PV
-   * 
+   *
    * @return
    */
   public static String randomEvent() {
-    List<String> list = Arrays.asList("ViewProduct", "ViewComment", "AddShoppingCart", "Pay",
-        "CancelOrder", "Comment", "Search Product", "ViewPicture", "JumpOut", "epage_click",
-        "bindWechat", "Start", "End");
+    List<String> list =
+        Arrays.asList(
+            "ViewProduct",
+            "ViewComment",
+            "AddShoppingCart",
+            "Pay",
+            "CancelOrder",
+            "Comment",
+            "Search Product",
+            "ViewPicture",
+            "JumpOut",
+            "epage_click",
+            "bindWechat",
+            "Start",
+            "End");
     return list.get((int) (Math.random() * list.size()));
   }
 
@@ -68,7 +82,6 @@ public class UEDataRandomUtil {
   }
 
   /**
-   * 
    * @param beginDate
    * @param endDate
    * @return
@@ -79,10 +92,8 @@ public class UEDataRandomUtil {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     try {
       start = format.parse(beginDate);
-      if (null == endDate)
-        end = new Date();
-      else
-        end = format.parse(endDate);
+      if (null == endDate) end = new Date();
+      else end = format.parse(endDate);
       if (start.getTime() >= end.getTime()) {
         return end.getTime();
       }
@@ -93,24 +104,21 @@ public class UEDataRandomUtil {
     }
     return new Date().getTime();
   }
-  
+
   /**
-   * 
    * @param beginDate
    * @param endDate
    * @return
    */
   public static long randomDateInOrder(String beginDate, String endDate) {
-    
+
     Date end = null;
     Date start = null;
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     try {
       start = format.parse(beginDate);
-      if (null == endDate)
-        end = new Date();
-      else
-        end = format.parse(endDate);
+      if (null == endDate) end = new Date();
+      else end = format.parse(endDate);
       if (start.getTime() >= end.getTime()) {
         return end.getTime();
       }
@@ -130,6 +138,7 @@ public class UEDataRandomUtil {
     }
     return rtn;
   }
+
   private static long random(long begin, long end) {
     long rtn = begin + (long) (Math.random() * (end - begin));
     if (rtn == begin || rtn == end) {
@@ -142,9 +151,6 @@ public class UEDataRandomUtil {
     return (int) (Math.random() * (end - start + 1) + start);
   }
 
-  private static String[] telFirst =
-      "134,135,136,137,138,139,150,151,152,157,158,159,130,131,132,155,156,133,153".split(",");
-
   private static String randomTel() {
     int index = getNum(0, telFirst.length - 1);
     String first = telFirst[index];
@@ -155,7 +161,7 @@ public class UEDataRandomUtil {
 
   /**
    * 随机属性
-   * 
+   *
    * @return
    */
   public static Map<String, Object> randomEventProperties(String event) {
@@ -195,7 +201,7 @@ public class UEDataRandomUtil {
     List<String> bookList = new ArrayList<String>();
     bookList.add(productType + "名-" + new Random().nextInt(200));
     trackPropertie.put("productName", bookList); // 商品列表
-    trackPropertie.put("productType", productType);// 商品类别
+    trackPropertie.put("productType", productType); // 商品类别
     trackPropertie.put("producePrice", new Random().nextInt()); // 商品价格
     trackPropertie.put("shop", randomValue("百货商店", "王府井", "步步高", "超市", "7-11", "悦方", "便利店"));
     return trackPropertie;
@@ -204,8 +210,9 @@ public class UEDataRandomUtil {
   private static String generateCarID() {
 
     char[] provinceAbbr = { // 省份简称 4+22+5+3
-        '京', '津', '沪', '渝', '冀', '豫', '云', '辽', '黑', '湘', '皖', '鲁', '苏', '浙', '赣', '鄂', '甘', '晋',
-        '陕', '吉', '闽', '贵', '粤', '青', '川', '琼', '宁', '新', '藏', '桂', '蒙', '港', '澳', '台'};
+      '京', '津', '沪', '渝', '冀', '豫', '云', '辽', '黑', '湘', '皖', '鲁', '苏', '浙', '赣', '鄂', '甘', '晋', '陕',
+      '吉', '闽', '贵', '粤', '青', '川', '琼', '宁', '新', '藏', '桂', '蒙', '港', '澳', '台'
+    };
     String alphas = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"; // 26个字母 + 10个数字
 
     Random random = new Random(); // 随机数生成器
@@ -223,12 +230,13 @@ public class UEDataRandomUtil {
     }
     return carID;
   }
-  
+
   private static String generateCarID(int uv) {
 
     char[] provinceAbbr = { // 省份简称 4+22+5+3
-        '京', '津', '沪', '渝', '冀', '豫', '云', '辽', '黑', '湘', '皖', '鲁', '苏', '浙', '赣', '鄂', '甘', '晋',
-        '陕', '吉', '闽', '贵', '粤', '青', '川', '琼', '宁', '新', '藏', '桂', '蒙', '港', '澳', '台'};
+      '京', '津', '沪', '渝', '冀', '豫', '云', '辽', '黑', '湘', '皖', '鲁', '苏', '浙', '赣', '鄂', '甘', '晋', '陕',
+      '吉', '闽', '贵', '粤', '青', '川', '琼', '宁', '新', '藏', '桂', '蒙', '港', '澳', '台'
+    };
     String alphas = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"; // 26个字母 + 10个数字
 
     Random random = new Random(uv); // 随机数生成器
@@ -249,7 +257,7 @@ public class UEDataRandomUtil {
 
   /**
    * 随机一条记录
-   * 
+   *
    * @return
    */
   public static Map<String, Object> randomRecord() {
@@ -258,23 +266,28 @@ public class UEDataRandomUtil {
     Integer deviceId = new Random().nextInt(1500);
     result.put("DeviceID", deviceId);
     result.put("plateColorDesc", randomValue("红", "黑 ", "白", "绿", "黄", "灰", "棕"));
-    result.put("vehicleClassDesc", randomValue("重型全挂车", "小型车", "微型车", "紧凑车型", "中等车型", "高级车型",
-        "三厢车型", "MPV车型", "SUV等车型", "CDV车型"));
+    result.put(
+        "vehicleClassDesc",
+        randomValue(
+            "重型全挂车", "小型车", "微型车", "紧凑车型", "中等车型", "高级车型", "三厢车型", "MPV车型", "SUV等车型", "CDV车型"));
     result.put("deviceName", "摄像头设备" + deviceId);
-    result.put("PlateNo", deviceId % 50 == 0 ? generateCarID(500000)
-        : randomValue("湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
+    result.put(
+        "PlateNo",
+        deviceId % 50 == 0
+            ? generateCarID(500000)
+            : randomValue(
+                "湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
     result.put("shotTime", randomDateInOrder("2021-01-01", null));
     double lon = Math.random() * Math.PI * 2;
     double lat = Math.acos(Math.random() * 2 - 1);
     result.put("bayonetLongitude", lon);
     result.put("bayonetLatitude", lat);
     result.put("location", lat + "," + lon);
-    result.put("speed",Math.abs(new Random().nextDouble()));
+    result.put("speed", Math.abs(new Random().nextDouble()));
     return result;
   }
 
   public static void main(String[] args) {
     System.out.println(randomRecord());
   }
-
 }

@@ -1,10 +1,7 @@
-
 /**
  * Project Name:flink-es-sink-demo File Name:DeckCarDetectQuery.java Package Name:com.coomia.query
  * Date:2020年9月15日上午9:02:49 Copyright (c) 2020, spancer.ray All Rights Reserved.
- *
  */
-
 package com.coomia.query;
 
 import java.io.IOException;
@@ -12,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -37,7 +33,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 /**
  * ClassName:DeckCarDetectQuery Function: 通过套牌车辆分析，可及时掌握套牌情况，加强对公共安全的管控。
  * 不同车身、不同车型、不同品牌、不同区域(deviceID)同时出现(within time interval) Date: 2020年9月15日 上午9:02:49
- * 
+ *
  * @author Administrator
  * @version
  * @since JDK 1.6
@@ -55,8 +51,7 @@ public class DeckCarDetectQueryMaster {
     SearchSourceBuilder ssb = new SearchSourceBuilder();
     BoolQueryBuilder query =
         QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("shotTime").gte(start).lte(end));
-    if (null != plateNo)
-      query.must(QueryBuilders.termsQuery("PlateNo", plateNo));
+    if (null != plateNo) query.must(QueryBuilders.termsQuery("PlateNo", plateNo));
     CardinalityAggregationBuilder color =
         AggregationBuilders.cardinality("plateColorDescDistinct").field("plateColorDesc");
     CardinalityAggregationBuilder clas =
@@ -69,9 +64,7 @@ public class DeckCarDetectQueryMaster {
     MaxspeedAggregationBuilder maxSpeedAgg =
         new MaxspeedAggregationBuilder("maxspeed").fields(fields);
 
-    /**
-     * build script and params.
-     */
+    /** build script and params. */
     Map<String, String> bucketsPathsMap = new HashMap<String, String>();
     bucketsPathsMap.put("plateColorDescDistinct", "plateColorDescDistinct");
     bucketsPathsMap.put("vehicleClassDescDistinct", "vehicleClassDescDistinct");
@@ -79,15 +72,23 @@ public class DeckCarDetectQueryMaster {
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）
-    havingScriptParam.put("speed", 120d); // 
-    Script script = new Script(ScriptType.INLINE, "expression",
-        "plateColorDescDistinct >havingCount || vehicleClassDescDistinct >havingCount || vehicleBrandDistinct > havingCount || maxspeed>speed",
-        havingScriptParam);
+    havingScriptParam.put("speed", 120d); //
+    Script script =
+        new Script(
+            ScriptType.INLINE,
+            "expression",
+            "plateColorDescDistinct >havingCount || vehicleClassDescDistinct >havingCount || vehicleBrandDistinct > havingCount || maxspeed>speed",
+            havingScriptParam);
     BucketSelectorPipelineAggregationBuilder having =
         PipelineAggregatorBuilders.bucketSelector("HavingPlateNoGT1", bucketsPathsMap, script);
-    ssb.aggregation(AggregationBuilders.terms("GroupbyPlateNo").field("PlateNo")
-        .subAggregation(color).subAggregation(clas).subAggregation(brand)
-        .subAggregation(maxSpeedAgg).subAggregation(having));
+    ssb.aggregation(
+        AggregationBuilders.terms("GroupbyPlateNo")
+            .field("PlateNo")
+            .subAggregation(color)
+            .subAggregation(clas)
+            .subAggregation(brand)
+            .subAggregation(maxSpeedAgg)
+            .subAggregation(having));
     ssb.query(query);
     ssb.size(0);
     System.out.println(ssb.toString());
@@ -105,17 +106,20 @@ public class DeckCarDetectQueryMaster {
     for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bks : data) {
       // 输出是为了看看各个值是多少，查询本身输出的数据，就是套牌车了。
       System.out.println("套牌车: " + bks.getKey());
-      System.out.println("PlateNo: " + bks.getKey() + " plateColorDescDistinct: "
-          + ((ParsedCardinality) bks.getAggregations().get("plateColorDescDistinct")).getValue()
-          + " vehicleClassDescDistinct: "
-          + ((ParsedCardinality) bks.getAggregations().get("vehicleClassDescDistinct")).getValue()
-          + " VehicleBrandDistinct:"
-          + ((ParsedCardinality) bks.getAggregations().get("vehicleBrandDistinct")).getValue()
-          + " SpeedMetrics  " + ((ParsedMax) bks.getAggregations().get("maxspeed")).getValue());
+      System.out.println(
+          "PlateNo: "
+              + bks.getKey()
+              + " plateColorDescDistinct: "
+              + ((ParsedCardinality) bks.getAggregations().get("plateColorDescDistinct")).getValue()
+              + " vehicleClassDescDistinct: "
+              + ((ParsedCardinality) bks.getAggregations().get("vehicleClassDescDistinct"))
+                  .getValue()
+              + " VehicleBrandDistinct:"
+              + ((ParsedCardinality) bks.getAggregations().get("vehicleBrandDistinct")).getValue()
+              + " SpeedMetrics  "
+              + ((ParsedMax) bks.getAggregations().get("maxspeed")).getValue());
     }
 
     client.close();
-
   }
 }
-

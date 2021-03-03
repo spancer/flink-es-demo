@@ -1,17 +1,12 @@
-/*******************************************************************************
- * /*
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *  */
+/**
+ * ***************************************************************************** /* * Licensed under
+ * the Apache License, Version 2.0 (the "License"); * you may not use this file except in compliance
+ * with the License. * You may obtain a copy of the License at * *
+ * http://www.apache.org/licenses/LICENSE-2.0 * * Unless required by applicable law or agreed to in
+ * writing, software * distributed under the License is distributed on an "AS IS" BASIS, * WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. * See the License for the
+ * specific language governing permissions and * limitations under the License.
+ */
 package com.coomia.source;
 
 import java.io.IOException;
@@ -20,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.io.DefaultInputSplitAssigner;
@@ -50,10 +44,10 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-/***
- * 
- * @author Administrator
+/**
+ * *
  *
+ * @author Administrator
  */
 public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
     implements ResultTypeQueryable<Row> {
@@ -74,18 +68,19 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
   private Iterator<Map<String, Object>> iterator;
   private Map<String, Integer> position;
 
-
-  public ElasticsearchInput(List<HttpHost> httpHosts, RestClientFactory restClientFactory,
-      String index) {
+  public ElasticsearchInput(
+      List<HttpHost> httpHosts, RestClientFactory restClientFactory, String index) {
     this.httpHosts = httpHosts;
     this.restClientFactory = restClientFactory;
     this.index = index;
   }
 
-  @Override
-  public void configure(Configuration parameters) {
-
+  public static Builder builder(List<HttpHost> httpHosts, String index) {
+    return new Builder(httpHosts, index);
   }
+
+  @Override
+  public void configure(Configuration parameters) {}
 
   @Override
   public BaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
@@ -123,11 +118,12 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
     }
 
     hasNext = true;
-    iterator = Arrays.stream(searchResponse.getHits().getHits()).map(t -> t.getSourceAsMap())
-        .collect(Collectors.toList()).iterator();
+    iterator =
+        Arrays.stream(searchResponse.getHits().getHits())
+            .map(t -> t.getSourceAsMap())
+            .collect(Collectors.toList())
+            .iterator();
   }
-
-
 
   @Override
   public void openInputFormat() throws IOException {
@@ -164,8 +160,7 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
 
   @Override
   public Row nextRecord(Row reuse) throws IOException {
-    if (!hasNext)
-      return null;
+    if (!hasNext) return null;
 
     if (!iterator.hasNext()) {
       this.search();
@@ -177,8 +172,7 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
 
     for (Map.Entry<String, Object> entry : iterator.next().entrySet()) {
       Integer p = position.get(entry.getKey());
-      if (p == null)
-        throw new IOException("unknown field " + entry.getKey());
+      if (p == null) throw new IOException("unknown field " + entry.getKey());
 
       reuse.setField(p, entry.getValue());
     }
@@ -188,8 +182,7 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
 
   @Override
   public void close() throws IOException {
-    if (client == null)
-      return;
+    if (client == null) return;
 
     iterator = null;
     ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
@@ -205,29 +198,22 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
     return rowTypeInfo;
   }
 
-  public static Builder builder(List<HttpHost> httpHosts, String index) {
-    return new Builder(httpHosts, index);
-  }
-
   @PublicEvolving
   public static class Builder {
     private final List<HttpHost> httpHosts;
     private String index;
     private RowTypeInfo rowTypeInfo;
-    private RestClientFactory restClientFactory = restClientBuilder -> {
-    };
+    private RestClientFactory restClientFactory = restClientBuilder -> {};
 
     public Builder(List<HttpHost> httpHosts, String index) {
       this.httpHosts = Preconditions.checkNotNull(httpHosts);
       this.index = index;
     }
 
-
     public Builder setRowTypeInfo(RowTypeInfo rowTypeInfo) {
       this.rowTypeInfo = rowTypeInfo;
       return this;
     }
-
 
     public ElasticsearchInput build() {
       Preconditions.checkNotNull(this.rowTypeInfo);
@@ -235,6 +221,5 @@ public class ElasticsearchInput extends RichInputFormat<Row, InputSplit>
       input.rowTypeInfo = this.rowTypeInfo;
       return input;
     }
-
   }
 }

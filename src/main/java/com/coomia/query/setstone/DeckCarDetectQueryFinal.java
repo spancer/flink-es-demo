@@ -35,8 +35,8 @@ import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
+import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.CardinalityAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.MaxAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
@@ -66,17 +66,32 @@ public class DeckCarDetectQueryFinal {
     BoolQueryBuilder query =
         QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("shotTime").gte(start).lte(end));
     if (null != plateNo) query.must(QueryBuilders.termsQuery("PlateNo", plateNo));
-    CardinalityAggregationBuilder color =
-        AggregationBuilders.cardinality("plateColorDescDistinct").field("plateColorDesc");
-    CardinalityAggregationBuilder clas =
-        AggregationBuilders.cardinality("vehicleClassDescDistinct").field("vehicleClassDesc");
-    CardinalityAggregationBuilder brand =
-        AggregationBuilders.cardinality("vehicleBrandDistinct").field("VehicleBrand");
+    FilterAggregationBuilder color =
+        AggregationBuilders.filter(
+            "colorNotNull",
+            QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("plateColorDesc", "未知")))
+            .subAggregation(
+                AggregationBuilders.cardinality("plateColorDescDistinct").field("plateColorDesc"));
+    FilterAggregationBuilder clas =
+        AggregationBuilders.filter(
+            "clasNotNull",
+            QueryBuilders.boolQuery()
+                .mustNot(QueryBuilders.termsQuery("vehicleClassDesc", "未知")))
+            .subAggregation(
+                AggregationBuilders.cardinality("vehicleClassDescDistinct")
+                    .field("vehicleClassDesc"));
+    FilterAggregationBuilder brand =
+        AggregationBuilders.filter(
+            "brandNotNull",
+            QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("VehicleBrand", "未知")))
+            .subAggregation(
+                AggregationBuilders.cardinality("vehicleBrandDistinct").field("VehicleBrand"));
     List fields = new ArrayList<String>();
     fields.add("shotTime");
     fields.add("location");
 
-    MaxAggregationBuilder maxspeedAgg = AggregationBuilders.max("maxspeed").field("speed");//speed为车速字段
+    MaxAggregationBuilder maxspeedAgg =
+        AggregationBuilders.max("maxspeed").field("speed"); // speed为车速字段
 
     /** build script and params. */
     Map<String, String> bucketsPathsMap = new HashMap<String, String>();
@@ -86,7 +101,7 @@ public class DeckCarDetectQueryFinal {
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）
-    havingScriptParam.put("speed", 120); //配置要大于的车速为120
+    havingScriptParam.put("speed", 120); // 配置要大于的车速为120
     Script script =
         new Script(
             ScriptType.INLINE,
@@ -127,7 +142,7 @@ public class DeckCarDetectQueryFinal {
               + ((ParsedCardinality) bks.getAggregations().get("plateColorDescDistinct")).getValue()
               + " vehicleClassDescDistinct: "
               + ((ParsedCardinality) bks.getAggregations().get("vehicleClassDescDistinct"))
-                  .getValue()
+              .getValue()
               + " VehicleBrandDistinct:"
               + ((ParsedCardinality) bks.getAggregations().get("vehicleBrandDistinct")).getValue()
               + " SpeedMetrics  "

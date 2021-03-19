@@ -95,9 +95,9 @@ public class DeckCarDetectQueryFinal {
 
     /** build script and params. */
     Map<String, String> bucketsPathsMap = new HashMap<String, String>();
-    bucketsPathsMap.put("plateColorDescDistinct", "plateColorDescDistinct");
-    bucketsPathsMap.put("vehicleClassDescDistinct", "vehicleClassDescDistinct");
-    bucketsPathsMap.put("vehicleBrandDistinct", "vehicleBrandDistinct");
+    bucketsPathsMap.put("plateColorDescDistinct", "colorNotNull.plateColorDescDistinct");
+    bucketsPathsMap.put("vehicleClassDescDistinct", "clasNotNull.vehicleClassDescDistinct");
+    bucketsPathsMap.put("vehicleBrandDistinct", "brandNotNull.vehicleBrandDistinct");
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）

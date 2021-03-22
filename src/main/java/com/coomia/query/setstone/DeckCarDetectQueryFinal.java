@@ -32,10 +32,12 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.filter.ParsedFilter;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.MaxAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
@@ -68,22 +70,22 @@ public class DeckCarDetectQueryFinal {
     if (null != plateNo) query.must(QueryBuilders.termsQuery("PlateNo", plateNo));
     FilterAggregationBuilder color =
         AggregationBuilders.filter(
-            "colorNotNull",
-            QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("plateColorDesc", "未知")))
+                "colorNotNull",
+                QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("plateColorDesc", "未知")))
             .subAggregation(
                 AggregationBuilders.cardinality("plateColorDescDistinct").field("plateColorDesc"));
     FilterAggregationBuilder clas =
         AggregationBuilders.filter(
-            "clasNotNull",
-            QueryBuilders.boolQuery()
-                .mustNot(QueryBuilders.termsQuery("vehicleClassDesc", "未知")))
+                "clasNotNull",
+                QueryBuilders.boolQuery()
+                    .mustNot(QueryBuilders.termsQuery("vehicleClassDesc", "未知")))
             .subAggregation(
                 AggregationBuilders.cardinality("vehicleClassDescDistinct")
                     .field("vehicleClassDesc"));
     FilterAggregationBuilder brand =
         AggregationBuilders.filter(
-            "brandNotNull",
-            QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("VehicleBrand", "未知")))
+                "brandNotNull",
+                QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("VehicleBrand", "未知")))
             .subAggregation(
                 AggregationBuilders.cardinality("vehicleBrandDistinct").field("VehicleBrand"));
     List fields = new ArrayList<String>();
@@ -135,18 +137,32 @@ public class DeckCarDetectQueryFinal {
     for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bks : data) {
       // 输出是为了看看各个值是多少，查询本身输出的数据，就是套牌车了。
       System.out.println("套牌车: " + bks.getKey());
-      System.out.println(
-          "PlateNo: "
-              + bks.getKey()
-              + " plateColorDescDistinct: "
-              + ((ParsedCardinality) bks.getAggregations().get("plateColorDescDistinct")).getValue()
-              + " vehicleClassDescDistinct: "
-              + ((ParsedCardinality) bks.getAggregations().get("vehicleClassDescDistinct"))
-              .getValue()
-              + " VehicleBrandDistinct:"
-              + ((ParsedCardinality) bks.getAggregations().get("vehicleBrandDistinct")).getValue()
-              + " SpeedMetrics  "
-              + ((ParsedMax) bks.getAggregations().get("maxspeed")).getValue());
+      for (Aggregation sub : bks.getAggregations()) {
+        String name = sub.getName();
+        if (name.equals("colorNotNull"))
+          System.out.print(
+              " color: "
+                  + ((ParsedCardinality)
+                          ((ParsedFilter) sub).getAggregations().get("plateColorDescDistinct"))
+                      .getValue());
+        else if (name.equals("clasNotNull"))
+          System.out.print(
+              " clas: "
+                  + ((ParsedCardinality)
+                          ((ParsedFilter) sub).getAggregations().get("vehicleClassDescDistinct"))
+                      .getValue());
+        else if (name.equals("brandNotNull"))
+          System.out.print(
+              " brand: "
+                  + ((ParsedCardinality)
+                          ((ParsedFilter) sub).getAggregations().get("vehicleBrandDistinct"))
+                      .getValue());
+        else if (name.equals("maxspeed"))
+          System.out.print(
+              " maxspeed: "
+                  + ((ParsedMax) sub).getValue());
+      }
+      System.out.println("");
     }
 
     client.close();

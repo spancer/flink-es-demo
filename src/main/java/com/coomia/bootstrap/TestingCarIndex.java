@@ -44,68 +44,50 @@ import org.elasticsearch.common.xcontent.XContentFactory;
  * @since JDK 1.6
  * @see
  */
-public class Bootstrap {
+public class TestingCarIndex {
 
   public static void main(String[] args) throws Exception {
 
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-    env.setParallelism(1);
-    DataStream<String> data = env.addSource(new UserEventSource(100000)); // 500万
+
     String host = "elasticsearch";
     int port = 9200;
     List<HttpHost> httpHosts = new ArrayList<>();
     httpHosts.add(new HttpHost(host, port, "http"));
     RestHighLevelClient client =
         new RestHighLevelClient(RestClient.builder(new HttpHost(host, port, "http")));
-    String index = "cartimeasc";
-    boolean recreate = true;
+    String index = "car2020";
     // delete index
-    if (recreate && client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT)) {
+    if (client.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT)) {
       DeleteIndexRequest deleteIndex = new DeleteIndexRequest(index);
       client.indices().delete(deleteIndex, RequestOptions.DEFAULT);
-
-      // mapping config and put
-      XContentBuilder builder = XContentFactory.jsonBuilder();
-      builder.startObject();
+    }
+    // mapping config and put
+    XContentBuilder builder = XContentFactory.jsonBuilder();
+    builder.startObject();
+    {
+      builder.startObject("properties");
       {
-        builder.startObject("properties");
+        builder.startObject("PlateNo");
         {
-          builder.startObject("PlateNo");
-          {
-            builder.field("type", "keyword");
-          }
-          builder.endObject();
-          builder.startObject("plateColorDesc");
-          {
-            builder.field("type", "keyword");
-          }
-          builder.endObject();
-          builder.startObject("location");
-          {
-            builder.field("type", "geo_point");
-          }
-          builder.endObject();
-          builder.startObject("vehicleClassDesc");
-          {
-            builder.field("type", "keyword");
-          }
-          builder.endObject();
+          builder.field("type", "keyword");
+        }
+        builder.endObject();
+
+        builder.startObject("id");
+        {
+          builder.field("type", "keyword");
         }
         builder.endObject();
       }
       builder.endObject();
-      // create index car
-      CreateIndexRequest createIndex = new CreateIndexRequest(index);
-      createIndex.mapping(index, builder);
-      createIndex.settings(
-          Settings.builder().put("index.number_of_shards", 5).put("index.number_of_replicas", 1));
-      client.indices().create(createIndex, RequestOptions.DEFAULT);
     }
-    ElasticsearchSink.Builder<String> esSinkBuilder =
-        new ElasticsearchSink.Builder<>(httpHosts, new ElasticsearchSinkFunctionWithConf(index));
-    data.addSink(esSinkBuilder.build());
-
-    env.execute("sink event to es");
+    builder.endObject();
+    // create index car
+    CreateIndexRequest createIndex = new CreateIndexRequest(index);
+    createIndex.mapping(index, builder);
+    createIndex.settings(
+        Settings.builder().put("index.number_of_shards", 5).put("index.number_of_replicas", 0));
+    client.indices().create(createIndex, RequestOptions.DEFAULT);
     client.close();
   }
 }

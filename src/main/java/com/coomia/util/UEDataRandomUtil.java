@@ -281,7 +281,7 @@ public class UEDataRandomUtil {
   public static Map<String, Object> randomRecord() {
     Map<String, Object> result = new HashMap<String, Object>();
     result.put("rowKey", UUID.randomUUID().toString().replaceAll("-", ""));
-    Integer deviceId = new Random().nextInt(1500);
+    Integer deviceId = new Random().nextInt(15000);
     result.put("DeviceID", deviceId);
     result.put("plateColorDesc", randomValue("红", "黑 ", "白", "绿", "黄", "灰", "棕"));
     result.put(
@@ -289,12 +289,7 @@ public class UEDataRandomUtil {
         randomValue(
             "重型全挂车", "小型车", "微型车", "紧凑车型", "中等车型", "高级车型", "三厢车型", "MPV车型", "SUV等车型", "CDV车型"));
     result.put("deviceName", "摄像头设备" + deviceId);
-    result.put(
-        "PlateNo",
-        deviceId % 50 == 0
-            ? generateCarID(500000)
-            : randomValue(
-                "湘A1NS20", "湘A2NN30", "湘A2NSV0", "湘A3NST0", "湘A4NS50", "湘ATNS60", "湘A4NS80"));
+    result.put("PlateNo", generateCarID(5000000));
     result.put("shotTime", randomDateInOrder("2021-01-01", null));
     double lon = Math.random() * Math.PI * 2;
     double lat = Math.acos(Math.random() * 2 - 1);

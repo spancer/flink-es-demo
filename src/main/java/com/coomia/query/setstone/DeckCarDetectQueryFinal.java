@@ -103,7 +103,7 @@ public class DeckCarDetectQueryFinal {
     bucketsPathsMap.put("maxspeed", "maxspeed");
     Map<String, Object> havingScriptParam = new HashMap<String, Object>();
     havingScriptParam.put("havingCount", 1); // distinct count > 1，即表示有重复的数据（不同颜色或不同型号或其它）
-    havingScriptParam.put("speed", 120); // 配置要大于的车速为120
+    havingScriptParam.put("speed", 0.5); // 配置要大于的车速为120
     Script script =
         new Script(
             ScriptType.INLINE,

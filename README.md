@@ -70,12 +70,126 @@
 
 4、尾随分析：根据目标车辆过车的前后时间，经过的地点（可多选设备），找到目标车辆的尾随车辆。（结果返回最多1000条结果）
 
-`关键算法`：
-
-1. t1~t2,指定车牌，经过d1d2卡口，得到list1
-2. list1中每一个 抓拍时间前后1分钟，经过d1,按照车牌分组，得到list2
-3. list2每个车牌，前后N分钟，经过d1,按照车牌分组，得到list3
-4. list3每个车牌，前后N分钟，经过d2,按照车牌分组，得到List4
-5. 最后返回list4所有车牌
-
 ![image-20210218092556525](images/image-20210218092556525.png)
+
+`实现思路`：
+
+1) 建立如下索引结构：k1...kN为卡口ID，即DeviceID, kN对应的值为该车经过该卡口时的拍照时间，即shotTime，时间按顺序排列好，该索引可按月创建，id字段为车牌唯一ID。模拟数据如下所示：
+<pre>
+     {
+    	"id":4,
+    	"plateNo" : "car4",
+    	"k1" : [
+            3,
+            13,
+            23,
+            33
+            ],
+    	"k2" : [
+            4,
+            14,
+            24,
+            34
+            ],
+    	"k6" : [
+            16,
+            26,
+            36,
+            46
+            ]
+    }
+</pre>
+2) 运用bool query 来查询经过卡口为k1,k2,k3的车辆，使用minimum_should_match来控制必须经过的卡口数量；并使用must_not排除掉被尾随车辆本身。
+<pre>
+{
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "exists": {
+            "field": "k1"
+          }
+        },
+        {
+          "exists": {
+            "field": "k2"
+          }
+        },
+        {
+          "exists": {
+            "field": "k3"
+          }
+        },
+        {
+          "exists": {
+            "field": "k4"
+          }
+        }
+      ],
+      "minimum_should_match": 3,
+      "must_not": [
+        {
+          "term": {
+            "plateNo": {
+              "value": "car1"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+</pre>
+
+3) 用script查询，来过滤数据，把满足时间间隔（如3分钟...10分钟）的数据筛选出来。
+<pre>
+{
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "exists": {
+            "field": "k1"
+          }
+        },
+        {
+          "exists": {
+            "field": "k2"
+          }
+        },
+        {
+          "exists": {
+            "field": "k3"
+          }
+        },
+        {
+          "exists": {
+            "field": "k4"
+          }
+        }
+      ],
+      "minimum_should_match": 3,
+      "must_not": [
+        {
+          "term": {
+            "plateNo": {
+              "value": "car1"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "post_filter": {
+    "script": {
+      "script": {
+        "source":"if(Math.abs(doc['k1'].value -3L) ==0) return true",//todo get doc by id
+        "lang": "painless"
+      }
+    }
+  }
+}
+
+</pre>
+
+
